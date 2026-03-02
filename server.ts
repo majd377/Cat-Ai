@@ -358,7 +358,7 @@ async function startServer() {
     try {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-flash-latest",
         contents: [
           ...history.map((h: any) => ({
             role: h.role === 'model' ? 'model' : 'user',
