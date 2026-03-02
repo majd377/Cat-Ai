@@ -1,20 +1,40 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# مشروع القط المفكر (Thinking Cat AI) 🐱✨
 
-# Run and deploy your AI Studio app
+هذا المشروع هو تطبيق ذكاء اصطناعي متكامل (Full-Stack) مبني باستخدام **React** و **Express** و **SQLite**.
 
-This contains everything you need to run your app locally.
+## 🚀 كيفية التشغيل والرفع على GitHub
 
-View your app in AI Studio: https://ai.studio/apps/3df59a74-b3be-4fe6-a2f2-22dadb177248
+### 1. الرفع على GitHub
+لرفع الكود بشكل صحيح، تأكد من رفع المجلد بالكامل بما في ذلك:
+- مجلد `src` (يحتوي على الواجهة الأمامية).
+- ملف `server.ts` (يحتوي على الخادم).
+- ملف `package.json` (يحتوي على الإعدادات).
+- ملف `.gitignore` (مهم جداً لتجاهل الملفات غير الضرورية).
 
-## Run Locally
+### 2. التشغيل محلياً (Local)
+بعد تحميل الكود، افتح "Terminal" ونفذ:
+```bash
+npm install
+npm run dev
+```
 
-**Prerequisites:**  Node.js
+### 3. النشر (Deployment)
+**تنبيه هام:** هذا المشروع يحتاج إلى "خادم" (Server) ليعمل، لذا **لا يمكن** نشره عبر GitHub Pages مباشرة لأنها تدعم المواقع الثابتة فقط.
 
+لنشره وجعله متاحاً للجميع، نوصي باستخدام منصات مثل:
+- **Render.com** (سهل جداً ومجاني).
+- **Railway.app**.
+- **Vercel** (يحتاج لتعديلات بسيطة في قاعدة البيانات).
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+**إعدادات النشر على Render:**
+- **Build Command:** `npm install && npm run build`
+- **Start Command:** `npm run start`
+- **Environment Variables:** أضف مفتاح `GEMINI_API_KEY` الخاص بك.
+
+## 🛠 التقنيات المستخدمة
+- **Frontend:** React + Tailwind CSS + Framer Motion.
+- **Backend:** Node.js + Express.
+- **Database:** SQLite (Better-SQLite3).
+- **AI:** Google Gemini API.
+
+مياو! 🐾✨

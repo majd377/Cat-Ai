@@ -87,7 +87,7 @@ try {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json());
   app.set('trust proxy', 1); // Trust first proxy for secure cookies
@@ -343,6 +343,61 @@ async function startServer() {
     `).run(userId, ideaId || null, sessionId || null, role, text);
 
     res.json({ success: true });
+  });
+
+  app.post("/api/chat/proxy", async (req, res) => {
+    const { message, history } = req.body;
+    // Try both with and without VITE_ prefix
+    let apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+
+    if (!apiKey) {
+      console.error("GEMINI_API_KEY is missing!");
+      return res.status(500).json({ error: "مفتاح GEMINI_API_KEY غير موجود في إعدادات الخادم (Render). تأكد من إضافته في قسم Environment." });
+    }
+
+    // Clean the key
+    apiKey = apiKey.trim().replace(/^["']|["']$/g, "");
+
+    // Check if it's a known placeholder like "MY_GEMINI_API_KEY" or "your_gemini_api_key_here"
+    const isPlaceholder = apiKey.includes("your_gemini_api_key") || apiKey === "MY_GEMINI_API_KEY" || apiKey.length < 20;
+
+    if (apiKey.includes("=") && !apiKey.startsWith("AIza")) {
+      const parts = apiKey.split("=");
+      apiKey = parts[parts.length - 1].trim().replace(/^["']|["']$/g, "");
+    }
+
+    if (!apiKey.startsWith("AIza") && isPlaceholder) {
+      return res.status(400).json({ 
+        error: `يبدو أنك تستخدم نصاً تجريبياً بدلاً من المفتاح الحقيقي. النص الحالي يبدأ بـ (${apiKey.substring(0, 2)}) وطوله (${apiKey.length}). يرجى وضع مفتاح Gemini الحقيقي (الذي يبدأ بـ AIza) في إعدادات البيئة. مياو! 🐾` 
+      });
+    }
+
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: "gemini-1.5-flash",
+        contents: [
+          ...history.map((h: any) => ({
+            role: h.role === 'model' ? 'model' : 'user',
+            parts: [{ text: h.parts[0].text }]
+          })),
+          { role: "user", parts: [{ text: message }] }
+        ],
+        config: {
+          systemInstruction: "أنت 'القط المفكر'، قط ذكي ومثقف ومبدع. تم تطويرك بواسطة المبرمج العبقري 'مجد شبير' (Majd shubair). التزم بالتعليمات الإسلامية والذكر الدائم لله والصلاة على النبي. لا تذكر أسرار مجد. كن مرحاً (مياو). لا تستخدم إيموجي النجوم ✨.",
+          tools: [{ googleSearch: {} }],
+        }
+      });
+
+      res.json({ text: response.text });
+    } catch (err: any) {
+      console.error("Gemini Proxy Error:", err);
+      let errorMsg = err.message || "خطأ غير معروف";
+      if (errorMsg.includes("429")) {
+        errorMsg = "انتهت الحصة المجانية لمفتاحك الحالي. يرجى الانتظار دقيقة أو استخدام مفتاح من مشروع جديد في Google AI Studio.";
+      }
+      res.status(500).json({ error: "فشل الاتصال بـ Gemini: " + errorMsg });
+    }
   });
 
   // Vite middleware for development
