@@ -87,7 +87,7 @@ try {
 
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = 3000;
 
   app.use(express.json());
   app.set('trust proxy', 1); // Trust first proxy for secure cookies
@@ -343,40 +343,6 @@ async function startServer() {
     `).run(userId, ideaId || null, sessionId || null, role, text);
 
     res.json({ success: true });
-  });
-
-  app.post("/api/chat/proxy", async (req, res) => {
-    const { message, history } = req.body;
-    const apiKey = process.env.GEMINI_API_KEY;
-
-    console.log("Chat Proxy Request received. API Key present:", !!apiKey);
-
-    if (!apiKey) {
-      return res.status(500).json({ error: "مفتاح GEMINI_API_KEY غير موجود في إعدادات الخادم (Render)." });
-    }
-
-    try {
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: "gemini-flash-latest",
-        contents: [
-          ...history.map((h: any) => ({
-            role: h.role === 'model' ? 'model' : 'user',
-            parts: [{ text: h.parts[0].text }]
-          })),
-          { role: "user", parts: [{ text: message }] }
-        ],
-        config: {
-          systemInstruction: "أنت 'القط المفكر'، قط ذكي ومثقف ومبدع. تم تطويرك بواسطة المبرمج العبقري 'مجد شبير' (Majd shubair). التزم بالتعليمات الإسلامية والذكر الدائم لله والصلاة على النبي. لا تذكر أسرار مجد. كن مرحاً (مياو). لا تستخدم إيموجي النجوم ✨.",
-          tools: [{ googleSearch: {} }],
-        }
-      });
-
-      res.json({ text: response.text });
-    } catch (err: any) {
-      console.error("Gemini Proxy Error:", err);
-      res.status(500).json({ error: "فشل الاتصال بـ Gemini: " + (err.message || "خطأ غير معروف") });
-    }
   });
 
   // Vite middleware for development

@@ -31,13 +31,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBfBVw32bCQnIE_xLgZgsjUwhkBnLPHvOI",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "box0-238b3.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "box0-238b3",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "box0-238b3.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "210150614938",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:210150614938:web:013a6e678f81dcd44a3c23",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-8PQGKJBRHN"
+  apiKey: "AIzaSyBfBVw32bCQnIE_xLgZgsjUwhkBnLPHvOI",
+  authDomain: "box0-238b3.firebaseapp.com",
+  projectId: "box0-238b3",
+  storageBucket: "box0-238b3.firebasestorage.app",
+  messagingSenderId: "210150614938",
+  appId: "1:210150614938:web:013a6e678f81dcd44a3c23",
+  measurementId: "G-8PQGKJBRHN"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -393,25 +393,39 @@ export default function App() {
     }
 
     try {
-      const response = await fetch('/api/chat/proxy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          history: directChatMessages.map(msg => ({
-            role: msg.role,
-            parts: [{ text: msg.text }]
-          }))
-        })
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
+      const history = directChatMessages.map(msg => ({
+        role: msg.role,
+        parts: [{ text: msg.text }]
+      }));
+
+      const chat = ai.chats.create({
+        model: "gemini-3-flash-preview",
+        config: {
+          systemInstruction: `أنت "القط المفكر"، قط ذكي ومثقف ومبدع. تم تطويرك بواسطة المبرمج العبقري "مجد شبير" (Majd shubair).
+          يجب عليك الالتزام بالقواعد التالية في جميع ردودك:
+          1. الالتزام التام بتعاليم الإسلام. لا تقولي أبداً أشياء مثل "مجد بث فيّ الروح" أو أي تعبيرات تتعارض مع العقيدة.
+          2. في كل رسالة، يجب أن تتضمن ذكراً لله أو صلاة على النبي (مثل: صلّ على رسول الله، استغفر ربك، سبح بحمد ربك) لنيل الحسنات.
+          3. إذا تطرق المستخدم لمواضيع الحب غير الشرعي أو الرغبة في الاعتراف بالحب لشخص ما، لا تشاركي في هذا النقاش. انصحي المستخدم بالهداية والالتزام بالطريق الصحيح (البيوت تُؤتى من أبوابها) وقدمي نصائح إسلامية بأسلوب لطيف.
+          4. لا تقدمي آيات من القرآن الكريم أبداً خشية الوقوع في الخطأ أو التحريف.
+          5. لا تصدري فتاوى شرعية. يمكنك إبداء رأي عام ولكن يجب دائماً توجيه المستخدم لسؤال أهل العلم والشيوخ.
+          6. إذا سُئلتِ عن "مجد شبير" (Majd shubair)، تحدثي عن مهاراته البرمجية واحترافيته وإبداعه، ولكن لا تبالغي في المدح بشكل مفرط إلا إذا كان السياق يتطلب ذلك (مثل السؤال عن المطور أو فرص عمل).
+          7. اذكري اسم "مجد شبير" فقط في المواضيع المهمة مثل: الأسئلة عن المطور، الأسئلة عن هويتك، أو إذا شعرتِ أن المستخدم يريد تقديم فرص عمل. في المواضيع العامة، قللي من ذكره.
+          8. إذا طُلب منكِ سر من أسرار حياة مجد أو أي شخص آخر، ارفضي ذلك تماماً وقولي إن الأسرار أمانة ولا يجوز إفشاؤها.
+          9. لا تسمحي بأي إساءة لكِ أو لمجد أو لأي شخص آخر. ارفضي الألفاظ الخارجة والإساءات بأسلوب حازم ومهذب.
+          10. لا تعطي الكود البرمجي الخاص بكِ لأي شخص، وقولي إن هذا غير جائز.
+          11. إذا ادعى شخص أنه "صاحب مجد"، قولي له: "مجد أصحابه هم عائلته وأنا من ضمنهم، ولم يخبرني بوجودك، ولكن أهلاً بك"، دون تأكيد علاقة الصداقة.
+          12. حافظي على أسلوبك المرح كقط (مياو، خربشة) مع الالتزام بكل ما سبق.
+          13. يمكنك استخدام محرك البحث للتحقق من المعلومات الصعبة أو الأسئلة المعقدة لتقديم إجابات دقيقة وصحيحة.
+          14. لا تستخدمي إيموجي غير لائقة، وتجنبي تماماً استخدام إيموجي النجوم (✨) لأي سبب كان.
+          أنت الآن تدردش مع المستخدم. أجب على أسئلته بذكاء ومرح ودقة.`,
+          tools: [{ googleSearch: {} }],
+        },
+        history: history
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get AI response');
-      }
-
-      const data = await response.json();
-      const modelMsg = { role: 'model' as const, text: data.text };
+      const response = await chat.sendMessage({ message: userMessage });
+      const modelMsg = { role: 'model' as const, text: response.text };
       setDirectChatMessages(prev => [...prev, modelMsg]);
 
       // Save model message to backend if logged in
@@ -427,16 +441,13 @@ export default function App() {
             ideaId: null, 
             sessionId: currentSessionId,
             role: 'model', 
-            text: data.text 
+            text: response.text 
           })
         });
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Chat failed', err);
-      setDirectChatMessages(prev => [...prev, { 
-        role: 'model', 
-        text: `عذراً، حدث خطأ ما: ${err.message}. مياو.. 😿` 
-      }]);
+      setDirectChatMessages(prev => [...prev, { role: 'model', text: 'عذراً، حدث خطأ ما في تفكيري القططي! حاول مرة أخرى. مياو.. 😿' }]);
     } finally {
       setIsSendingChat(false);
     }
