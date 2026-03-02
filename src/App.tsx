@@ -431,9 +431,12 @@ export default function App() {
           })
         });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Chat failed', err);
-      setDirectChatMessages(prev => [...prev, { role: 'model', text: 'عذراً، حدث خطأ ما في تفكيري القططي! تأكد من وضع مفتاح GEMINI_API_KEY في إعدادات Render. مياو.. 😿' }]);
+      setDirectChatMessages(prev => [...prev, { 
+        role: 'model', 
+        text: `عذراً، حدث خطأ ما: ${err.message}. مياو.. 😿` 
+      }]);
     } finally {
       setIsSendingChat(false);
     }
