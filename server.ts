@@ -87,7 +87,7 @@ try {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json());
   app.set('trust proxy', 1); // Trust first proxy for secure cookies
