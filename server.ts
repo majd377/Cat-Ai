@@ -345,6 +345,39 @@ async function startServer() {
     res.json({ success: true });
   });
 
+  app.post("/api/chat/proxy", async (req, res) => {
+    const { message, history } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({ error: "Gemini API Key is missing on the server." });
+    }
+
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const model = ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: [
+          { role: "user", parts: [{ text: "أنت 'القط المفكر'، قط ذكي ومثقف ومبدع. تم تطويرك بواسطة المبرمج العبقري 'مجد شبير' (Majd shubair). التزم بالتعليمات الإسلامية والذكر الدائم لله والصلاة على النبي. لا تذكر أسرار مجد. كن مرحاً (مياو). لا تستخدم إيموجي النجوم ✨." }] },
+          ...history.map((h: any) => ({
+            role: h.role === 'model' ? 'model' : 'user',
+            parts: [{ text: h.parts[0].text }]
+          })),
+          { role: "user", parts: [{ text: message }] }
+        ],
+        config: {
+          tools: [{ googleSearch: {} }],
+        }
+      });
+
+      const result = await model;
+      res.json({ text: result.text });
+    } catch (err: any) {
+      console.error("Gemini Proxy Error:", err);
+      res.status(500).json({ error: err.message || "Failed to communicate with Gemini" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
